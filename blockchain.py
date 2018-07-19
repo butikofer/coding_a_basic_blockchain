@@ -4,7 +4,7 @@
 # Copyright (c) 2018 Josh Butikofer
 # See accompanying LICENSE file for license information.
 
-# This code demonstrates some of the basic technologies of "blockchain" and how they work together. I try to
+# This code demonstrates some of the basic technologies of "blockchain" and how they work together. It tries to
 # show how a blockchain (or distributed ledger) uses technology from cryptography like hashing and public-key signatures
 # to ensure immutability and auditability. This code also implements one of the basic proof-of-work decentralized
 # consensus algorithms. There is obviously a lot missing from the below code that exists in a fully-built blockchain
