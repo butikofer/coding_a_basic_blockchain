@@ -8,9 +8,9 @@ Please see the LICENSE file for copyright and usage information.
 
 ## Usage
 
-Included are Pipfiles that can be used by `pipenv` to setup your environment. Other tools can be used as well as long as Python 3.7, and the other dependencies mentioned in the `Pipfile`, are installed.
+Included is a `Pipfile` and `requirements.txt` that can be used by `pipenv` or `pip` to setup your environment. Other tools can be used as long as Python 3.7, and the other dependencies mentioned in the `Pipfile`, are installed.
 
-For example, using `pipenv`:
+Using `pipenv`:
 
 ```
 cd <CLONED DIR>
