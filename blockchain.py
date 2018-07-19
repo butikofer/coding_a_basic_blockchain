@@ -23,21 +23,21 @@ class Transaction:
     sender_address: rsa.PublicKey
     recipient_address: rsa.PublicKey
     value: float
-    signature: bytes = field(default=None)
+    signature: bytes = field(default=b'')
        
-    def sign(self, sender_private_key):
+    def sign(self, sender_private_key: rsa.PrivateKey) -> None:
         """Takes a private key, which the sender should never share, and signs this transaction to verify
         they want to transfer the tokens. We sign the core attributes of the transaction using the private
         key. We will use SHA-256 as the signature hashing algorithm."""  
         self.signature = rsa.sign(self.get_core_data(), sender_private_key, 'SHA-256')
         self.validate()
         
-    def get_core_data(self):
+    def get_core_data(self) -> bytes:
         """Provides the core info needed to sign the transaction--basically everything BUT the
         signature."""
         return (str(self.sender_address) + str(self.recipient_address) + str(self.value)).encode()
         
-    def validate(self):
+    def validate(self) -> None:
         """Validates the integrity of this transaction by using RSA to verify it is signed properly.
         Gets the core data about the transaction, and the signature made using the private key,
         and uses the public key to validate it is signed. The public key is the sender_address."""
@@ -46,7 +46,7 @@ class Transaction:
 @dataclass
 class Block:
     num: int
-    timestamp: int
+    timestamp: float
     prev_block_hash: str
     transactions: List[Transaction]
     block_hash: str = field(default="")
@@ -66,7 +66,7 @@ class Block:
         
         return (str(self.num) + str(self.timestamp) + str(self.prev_block_hash) + str(self.nonce) + str(self.transactions)).encode()
     
-    def validate(self, proof_of_work_func) -> bool:
+    def validate(self, proof_of_work_func: Callable[[str], bool]) -> bool:
         """Using the given function, ensure that this block hashes correctly, adhering to the agreed-upon
         consensus algorithm."""
         
@@ -77,15 +77,15 @@ REWARD_AMOUNT = 2.0
 
 class BlockchainNode:    
     
-    def __init__(self, miner_address):
+    def __init__(self, miner_address) -> None:
         self.miner_address: rsa.PublicKey = miner_address
         self.blocks: List[Block] = []
         self.pending_transactions: List[Transaction] = []
-        self.proof_of_work_func = lambda x: x.endswith('000')
+        self.proof_of_work_func: Callable[[str], bool] = lambda x: x.endswith('000')
         
         self.mine_block()
       
-    def submit_transaction(self, transaction):        
+    def submit_transaction(self, transaction: Transaction) -> None:
         """This is used to submit a new transaction to the chain. End-users send transactions and aren't
         concerned about the blocks, per se. This function takes a signed transaction will validate it is
         cryptographically sound. It will then need to check that there is sufficient balance to make the
@@ -105,7 +105,7 @@ class BlockchainNode:
         # Transaction checks out--add to the list of our pending transactions!
         self.pending_transactions.append(transaction)
         
-    def mine_block(self):
+    def mine_block(self) -> None:
         """This function bundles all pending transactions and mines a new block. Mining is the process
         by which a node creates a new block. This is where the decentralized consensus algorithm comes in.
         We will be using a proof-of-work algorithm that is computationally expensive. This prevents bad actor
@@ -146,7 +146,7 @@ class BlockchainNode:
         print(f"Successfully mined new block {new_block.num}!")
         
         
-    def execute_pow(self, block):
+    def execute_pow(self, block: Block) -> None:
         """Using the defined proof-of-work lambda, increment the nonce on the block until
         we satisfy the lambda's assertion. Since this iterating and hashing can take a long
         time and a lot of CPU, it can become computationally intensive. When this function returns
@@ -158,7 +158,7 @@ class BlockchainNode:
             
         print(f"Successfully found POW for block {block.num} with nonce {block.nonce}!")
         
-    def validate_chain(self):
+    def validate_chain(self) -> None:
         """Verifies that this chain is cryptographically sound and has not been modified. Also ensures
         that all blocks meet the conensus algorithm requirements. This function is MUCH faster than mining
         new blocks: this is why the proof-of-work algorithm works well. Verification is very fast, but mining new
@@ -176,13 +176,13 @@ class BlockchainNode:
                 
         print(f"Successfully validated chain of size {len(self.blocks)}!")
         
-    def get_balance(self, address):
+    def get_balance(self, address) -> float:
         """This method provides an easy way to traverse the chain to find out the balance of the given address.
         Bitcoin doesn't necessarily work this way, but other chains do, and it works fine for our purposes. This
         method will return the token balance of the given address, returning 0.0 if the address has never been
         seen on the chain before."""
         
-        balance = 0
+        balance = 0.0
         for b in self.blocks:
             for t in b.transactions:
                 if t.sender_address == address:
